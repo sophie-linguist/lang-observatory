@@ -1,0 +1,22 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: lang-observatory-db
+    shm_size: 4gb
+    restart: unless-stopped
+    command: >
+      postgres
+      -c shared_buffers=8GB
+      -c effective_cache_size=24GB
+      -c work_mem=4GB
+      -c maintenance_work_mem=4GB
+      -c max_wal_size=4GB
+    env_file: .env
+    environment:
+      POSTGRES_DB: lang_observatory
+      POSTGRES_USER: observatory
+      TZ: Asia/Seoul
+    ports:
+      - "5432:5432"
+    volumes:
+      - /home/ssohe/lang-observatory/pgdata:/var/lib/postgresql/data

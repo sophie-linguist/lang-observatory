@@ -1,0 +1,46 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: lang-observatory-db
+    shm_size: 2gb
+    restart: unless-stopped
+    command: >
+      postgres
+      -c shared_buffers=4GB
+      -c effective_cache_size=12GB
+      -c work_mem=2GB
+      -c maintenance_work_mem=2GB
+      -c max_wal_size=4GB
+    env_file: .env
+    environment:
+      POSTGRES_DB: lang_observatory
+      POSTGRES_USER: observatory
+      TZ: Asia/Seoul
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  dashboard:
+    build: ./dashboard
+    container_name: lang-observatory-dashboard
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      TZ: Asia/Seoul
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: lang_observatory
+      DB_USER: observatory
+      PYTHONPATH: /app:/app/src
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./dashboard:/app
+      - ./src:/app/src:ro
+      - ./prompts:/app/prompts:ro
+    depends_on:
+      - db
+
+volumes:
+  pgdata:

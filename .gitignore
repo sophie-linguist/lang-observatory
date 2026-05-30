@@ -1,0 +1,13 @@
+.env
+pgdata/
+venv/
+backups/
+logs/
+data/
+__pycache__/
+*.pyc
+*.dump
+*.sql.gz
+*.bak*
+*Zone.Identifier
+*.backup_*

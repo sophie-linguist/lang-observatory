@@ -1,0 +1,13 @@
+streamlit==1.39.0
+psycopg2-binary==2.9.10
+pandas==2.2.3
+matplotlib==3.9.2
+plotly==5.24.1
+python-dotenv==1.0.1
+anthropic==0.97.0
+
+# 클러스터링 (1-b-5-b 검증 트리거)
+numpy==2.4.4
+scikit-learn==1.8.0
+umap-learn==0.5.12
+hdbscan==0.8.42
