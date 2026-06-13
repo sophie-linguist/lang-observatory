@@ -8,6 +8,7 @@ import pandas as pd
 import re
 import plotly.express as px
 from collections import defaultdict
+import html
 
 
 def expand_pos(pos: str) -> list[str]:
@@ -16,12 +17,10 @@ def expand_pos(pos: str) -> list[str]:
 
 st.set_page_config(page_title="어휘 의미 탐색", layout="wide")
 
-import sys
-sys.path.insert(0, "/home/ssohe/lang-observatory/dashboard")
-from auth import check_password
-check_password()
-
-st.title("어휘 의미 탐색")
+st.markdown("""<div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 24px; border-radius: 16px; color: white; margin-bottom: 24px;'>
+<div style='font-size: 28px; font-weight: 700; margin-bottom: 8px;'>🔍 어휘 의미 탐색</div>
+<div style='font-size: 16px; opacity: 0.95;'>단어별 사용 빈도, 사전 정보, 실제 용례를 상세하게 확인</div>
+</div>""", unsafe_allow_html=True)
 
 st.markdown("""
 <style>
@@ -101,6 +100,91 @@ div[data-testid="stPopover"] > button:hover, div[data-testid="stButton"] > butto
     border-color: #CBD5E1 !important;
     color: #0F172A !important;
 }
+
+/* 검색창 디자인 */
+input[type="text"] {
+    border: 2px solid #E2E8F0 !important;
+    border-radius: 10px !important;
+    padding: 12px 16px !important;
+    font-size: 15px !important;
+    transition: all 0.2s ease !important;
+}
+input[type="text"]:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* Dataframe 테이블 디자인 */
+[data-testid="stDataFrame"] {
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+}
+[data-testid="stDataFrame"] thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+[data-testid="stDataFrame"] thead th {
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 12px !important;
+}
+[data-testid="stDataFrame"] tbody tr:hover {
+    background-color: #F8FAFC !important;
+}
+
+/* Metric 카드 디자인 */
+[data-testid="stMetric"] {
+    background-color: #F8FAFC !important;
+    padding: 16px !important;
+    border-radius: 10px !important;
+    border: 1px solid #E2E8F0 !important;
+}
+
+/* 사이드바 디자인 */
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%) !important;
+}
+section[data-testid="stSidebar"] > div {
+    background: transparent !important;
+}
+section[data-testid="stSidebar"] * {
+    color: white !important;
+}
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3,
+section[data-testid="stSidebar"] h4 {
+    color: white !important;
+    font-weight: 600 !important;
+}
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] span,
+section[data-testid="stSidebar"] div {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+section[data-testid="stSidebar"] hr {
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    margin: 20px 0 !important;
+}
+section[data-testid="stSidebar"] button {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 10px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+    padding: 10px 16px !important;
+}
+section[data-testid="stSidebar"] button:hover {
+    background-color: rgba(255, 255, 255, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+section[data-testid="stSidebar"] button p {
+    color: white !important;
+    font-weight: 500 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -113,7 +197,7 @@ default_query = st.query_params.get("word", "")
 query = st.text_input(
     "검색어",
     value=default_query,
-    placeholder="예: 긁다, 헬스",
+    placeholder="단어를 입력하세요",
     help="2글자 이상 입력하면 전방 일치로 후보를 보여줍니다.",
 )
 
@@ -188,7 +272,20 @@ selected_lemma = None
 selected_pos = None
 
 if not query:
-    st.info("검색창에 단어를 입력하세요.")
+    # 초기 화면 - 기능 안내
+    st.markdown("### 🔍 어휘 의미 탐색")
+
+    st.markdown("""
+    단어를 검색하면 다음 정보를 확인할 수 있습니다:
+
+    - 📊 **사용 빈도**: 코퍼스 내 출현 빈도와 기간
+    - 📖 **사전 정보**: 우리말샘, 표준국어대사전, 기초사전 비교
+    - 📈 **시계열 분석**: 매체별 사용 추이 그래프
+    - 💬 **실제 용례**: 시점별 사용 예시
+    - 🆕 **신어 정보**: 신어 후보 등록 여부
+    """)
+
+    st.info("👆 위 검색창에 단어를 입력하세요")
     st.stop()
 else:
     df_cand = fetch_candidates(query)
@@ -278,12 +375,27 @@ def fetch_basic_info(lemma: str, pos: str | None):
     """, (lemma,))
     cand_rows = cur.fetchall()
 
+    # 임베딩 건수 조회 (segment_lemma_map 기준)
+    if pos:
+        cur.execute("""
+            SELECT COUNT(DISTINCT m.embedding_id)
+            FROM segment_lemma_map m
+            WHERE m.lemma = %s AND m.pos = ANY(%s)
+        """, (lemma, expand_pos(pos)))
+    else:
+        cur.execute("""
+            SELECT COUNT(DISTINCT m.embedding_id)
+            FROM segment_lemma_map m
+            WHERE m.lemma = %s
+        """, (lemma,))
+    embedding_count = cur.fetchone()[0] if cur.rowcount > 0 else 0
+
     cur.close()
     conn.close()
-    return freq_rows, dict_rows, cand_rows
+    return freq_rows, dict_rows, cand_rows, embedding_count
 
 
-freq_rows, dict_rows, cand_rows = fetch_basic_info(lemma, pos)
+freq_rows, dict_rows, cand_rows, embedding_count = fetch_basic_info(lemma, pos)
 
 if not freq_rows:
     st.warning(f"'{lemma}' (품사={pos}) — `vocab_freq`에 데이터 없음")
@@ -318,6 +430,11 @@ else:
                 value=f"{total:,}회",
                 help=f"{mn} ~ {mx}"
             )
+
+# 임베딩 건수 표시
+st.caption(f"💡 **임베딩 대상 세그먼트**: {embedding_count:,}건 (실제 빈도와 다를 수 있음. 300자 세그먼트 단위로 집계)")
+
+st.divider()
 
 # ---------- 사전 sense 상세 함수 ----------
 @st.cache_data(ttl=300)
@@ -354,27 +471,54 @@ def render_dict_senses(lemma: str, dict_source: str):
     if dict_source == "stdict":
         st.caption("※ 번호는 sense_code 오름차순. 표준국어대 웹사전 화면 번호와 거의 일치합니다.")
 
+    dict_colors = {
+        "urimalsaem": "#10b981",
+        "stdict": "#3b82f6",
+        "kbd": "#8b5cf6"
+    }
+    dict_names = {
+        "urimalsaem": "우리말샘",
+        "stdict": "표준국어대사전",
+        "kbd": "한국어기초사전"
+    }
+
+    color = dict_colors.get(dict_source, "#64748b")
+    dict_name = dict_names.get(dict_source, dict_source)
+
     for idx, (sn, p, definition, examples, sense_cat, link) in enumerate(senses, 1):
         label_num = idx if dict_source == "stdict" else sn
-        header = f"**{label_num}.** {definition}"
-        if dict_source == "stdict":
-            header += f" &nbsp; `sense_code {sn}`"
 
-        with st.expander(header, expanded=False):
-            meta = []
-            if p: meta.append(f"품사 `{p}`")
-            if sense_cat: meta.append(f"범주 `{sense_cat}`")
-            if meta: st.caption(" · ".join(meta))
+        # 카드 스타일 렌더링
+        safe_definition = html.escape(definition) if definition else ""
 
-            if examples:
-                st.markdown("**예문**")
+        meta_badges = []
+        if p:
+            meta_badges.append(f"<span style='background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 4px; font-size: 12px;'>품사 {html.escape(p)}</span>")
+        if sense_cat:
+            meta_badges.append(f"<span style='background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 4px; font-size: 12px;'>범주 {html.escape(sense_cat)}</span>")
+
+        card_html = f"""<div style='background: #f8fafc; border-left: 4px solid {color}; padding: 16px; border-radius: 8px; margin: 12px 0;'>
+<div style='margin-bottom: 8px;'>
+<span style='font-size: 16px; font-weight: 700; color: #1e293b;'>의미 {label_num}</span>
+{f"<span style='background: {color}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px;'>{dict_name}</span>" if dict_source == "stdict" else ""}
+{f"<span style='color: #64748b; font-size: 12px; margin-left: 8px;'>sense_code {sn}</span>" if dict_source == "stdict" else ""}
+</div>
+<div style='font-size: 16px; font-weight: 500; color: #334155; margin: 12px 0; line-height: 1.6;'>
+{safe_definition}
+</div>
+{f"<div style='margin-top: 10px;'>{' '.join(meta_badges)}</div>" if meta_badges else ""}
+</div>"""
+
+        st.markdown(card_html, unsafe_allow_html=True)
+
+        # 예문은 expander로
+        if examples:
+            with st.expander(f"📝 예문 {len(examples)}개 보기", expanded=False):
                 for ex in examples:
                     st.markdown(render_example(ex))
-            else:
-                st.caption("예문 없음")
 
-            if link:
-                st.caption(f"[원문 링크]({link})")
+        if link:
+            st.caption(f"🔗 [원문 링크]({link})")
 
 
 st.divider()
@@ -382,7 +526,10 @@ st.divider()
 # ---------- 사전 등재 ----------
 st.markdown("#### 📖 사전 정보")
 if not dict_rows:
-    st.markdown(":red[미등재] (세 사전 어디에도 없음)")
+    st.markdown("""<div style='background: #fef2f2; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 6px; margin: 12px 0;'>
+<span style='color: #991b1b; font-weight: 600;'>🚫 미등재</span>
+<span style='color: #7f1d1d; margin-left: 8px;'>세 사전 어디에도 등재되지 않았습니다</span>
+</div>""", unsafe_allow_html=True)
 else:
     dict_label = {
         "urimalsaem": "우리말샘",
@@ -393,9 +540,15 @@ else:
     available_dicts = [s for s in ["urimalsaem", "stdict", "kbd"] if s in by_source]
     missing_dicts = [s for s in ["urimalsaem", "stdict", "kbd"] if s not in by_source]
 
-    if missing_dicts:
-        missing_str = " · ".join(dict_label[s] for s in missing_dicts)
-        st.caption(f":red[미등재]: {missing_str}")
+    # 등재 현황 배지
+    status_badges = []
+    for s in ["urimalsaem", "stdict", "kbd"]:
+        if s in by_source:
+            status_badges.append(f"<span style='background: #10b981; color: white; padding: 4px 10px; border-radius: 6px; font-size: 13px; margin-right: 6px;'>✓ {dict_label[s]} ({by_source[s]})</span>")
+        else:
+            status_badges.append(f"<span style='background: #f59e0b; color: white; padding: 4px 10px; border-radius: 6px; font-size: 13px; margin-right: 6px;'>✗ {dict_label[s]}</span>")
+
+    st.markdown(f"<div style='margin: 12px 0;'>{''.join(status_badges)}</div>", unsafe_allow_html=True)
 
     tab_labels = [f"{dict_label[s]} ({by_source[s]}개 sense)" for s in available_dicts]
     tabs = st.tabs(tab_labels)
@@ -408,12 +561,24 @@ st.divider()
 # 신어 후보
 st.markdown("#### 🆕 신어 후보 등록 여부")
 if not cand_rows:
-    st.markdown("등록되지 않음")
+    st.markdown("""<div style='background: #f8fafc; border-left: 4px solid #94a3b8; padding: 12px 16px; border-radius: 6px; margin: 12px 0;'>
+<span style='color: #64748b;'>등록되지 않음</span>
+</div>""", unsafe_allow_html=True)
 else:
     for cid, p, status, detected_at in cand_rows:
-        st.markdown(
-            f"- candidate_id `{cid}` · 품사 `{p}` · 상태 `{status}` · 첫 발견 {detected_at}"
-        )
+        status_color = "#10b981" if status == "confirmed" else "#f59e0b"
+        card_html = f"""<div style='background: #f8fafc; border-left: 4px solid {status_color}; padding: 14px 18px; border-radius: 8px; margin: 12px 0;'>
+<div style='margin-bottom: 6px;'>
+<span style='background: {status_color}; color: white; padding: 3px 10px; border-radius: 6px; font-size: 13px; font-weight: 600;'>🆕 신어 후보</span>
+<span style='color: #64748b; font-size: 13px; margin-left: 10px;'>ID: {cid}</span>
+</div>
+<div style='margin-top: 8px; color: #334155; font-size: 14px;'>
+<span style='background: #f1f5f9; color: #475569; padding: 3px 8px; border-radius: 4px; font-size: 12px; margin-right: 8px;'>품사 {html.escape(p)}</span>
+<span style='background: {status_color}; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; margin-right: 8px;'>{html.escape(status)}</span>
+<span style='color: #64748b; font-size: 13px;'>📅 첫 발견: {detected_at}</span>
+</div>
+</div>"""
+        st.markdown(card_html, unsafe_allow_html=True)
 
 st.divider()
 
@@ -661,372 +826,14 @@ else:
 
 st.divider()
 
-# ---------- 클러스터 + 대표 용례 ----------
-st.markdown("### 🧬 의미 클러스터 결과 (매체별)")
-st.caption("매체별로 임베딩 결과를 HDBSCAN 방식으로 클러스터링한 결과입니다.")
+# ---------- AI 분석 바로가기 ----------
+st.markdown("### 🤖 AI 의미 분석")
+st.caption("클러스터링과 Claude 검증으로 이 단어의 의미를 자동 분석할 수 있습니다.")
 
-@st.cache_data(ttl=60)
-def fetch_clusters_by_source(lemma: str, pos: str):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT
-            uc.cluster_id,
-            uc.source_id,
-            s.name AS source_name,
-            uc.member_count,
-            uc.cluster_label
-        FROM usage_clusters uc
-        LEFT JOIN sources s ON s.source_id = uc.source_id
-        WHERE uc.lemma = %s AND uc.pos = ANY(%s)
-        ORDER BY uc.source_id, uc.member_count DESC
-    """, (lemma, expand_pos(pos)))
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
-    return rows
-
-@st.cache_data(ttl=60)
-def fetch_cluster_examples(cluster_id: int, lemma: str, limit: int = 3):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT
-            ucm.similarity,
-            e.text_id,
-            e.comment_id,
-            e.segment_text AS content,
-            COALESCE(t.published_at, c.published_at) AS published_at,
-            t.title,
-            t.url
-        FROM usage_cluster_members ucm
-        JOIN embeddings e ON e.embedding_id = ucm.embedding_id
-        LEFT JOIN texts t ON t.text_id = e.text_id
-        LEFT JOIN comments c ON c.comment_id = e.comment_id
-        WHERE ucm.cluster_id = %s
-        ORDER BY ucm.similarity DESC NULLS LAST
-        LIMIT %s
-    """, (cluster_id, limit))
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
-    return rows
-
-
-def render_cluster_example(ex, lemma: str):
-    similarity, text_id, comment_id, content, published_at, title, url = ex
-    if not content:
-        return
-
-    display_content = content.replace("\n", " ").replace(lemma, f"**{lemma}**")
-
-    if len(display_content) > 200:
-        preview = display_content[:200] + "..."
-        with st.expander(preview, expanded=False):
-            st.markdown(display_content)
-            meta = []
-            if published_at: meta.append(str(published_at)[:10])
-            if similarity is not None: meta.append(f"유사도 {similarity:.3f}")
-            if meta: st.caption(" · ".join(meta))
-    else:
-        st.markdown(f"- {display_content}")
-        meta_parts = []
-        if published_at: meta_parts.append(str(published_at)[:10])
-        if similarity is not None: meta_parts.append(f"유사도 {similarity:.3f}")
-        if meta_parts: st.caption("  " + " · ".join(meta_parts))
-
-@st.cache_data(ttl=60)
-def fetch_validations(lemma: str):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT validation_id, pos, n_clusters, n_examples, judgment,
-               claude_result, created_at
-        FROM sense_validation
-        WHERE headword = %s
-        ORDER BY created_at DESC
-    """, (lemma,))
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
-    return rows
-
-
-@st.cache_data(ttl=60)
-def fetch_cluster_source_map(cluster_ids_tuple):
-    cluster_ids = list(cluster_ids_tuple)
-    if not cluster_ids:
-        return {}
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT uc.cluster_id, s.name
-        FROM usage_clusters uc
-        LEFT JOIN sources s ON s.source_id = uc.source_id
-        WHERE uc.cluster_id = ANY(%s)
-    """, (cluster_ids,))
-    result = {row[0]: row[1] for row in cur.fetchall()}
-    cur.close()
-    conn.close()
-    return result
-
-
-def render_validation_card(v, source_map):
-    validation_id, pos, n_clusters, n_examples, judgment, claude_result, created_at = v
-
-    if isinstance(claude_result, str):
-        claude_result = json.loads(claude_result)
-
-    senses = claude_result.get("senses", [])
-    context_distribution = claude_result.get("context_distribution", [])
-    notes = claude_result.get("notes", "")
-
-    all_cluster_ids = set()
-    for s in senses:
-        all_cluster_ids.update(s.get("cluster_ids_merged", []))
-    for cd in context_distribution:
-        all_cluster_ids.update(cd.get("cluster_ids", []))
-
-    source_labels = sorted({source_map.get(cid) for cid in all_cluster_ids if source_map.get(cid)})
-    source_str = " · ".join(source_labels) if source_labels else "(매체 추적 불가)"
-
-    st.markdown(f"#### 검증 #{validation_id} — {created_at.strftime('%Y-%m-%d %H:%M')} · {source_str}")
-    st.markdown(f"**판정**: `{judgment}` · `{pos}` · {n_clusters} 클러스터 · {n_examples} 용례")
-
-    for s in senses:
-        sense_no = s.get("sense_no", "?")
-        definition = s.get("definition", "")
-        rep_ex = s.get("representative_example", "")
-        cluster_ids_merged = s.get("cluster_ids_merged", [])
-        syntax = s.get("syntax_info", {})
-
-        cluster_str = f"클러스터 {', '.join(map(str, cluster_ids_merged))}" if cluster_ids_merged else ""
-        st.markdown(f"##### 의미 {sense_no} · {cluster_str}")
-        st.markdown(f"**{definition}**")
-        if rep_ex:
-            st.markdown(f"> {rep_ex}")
-
-        dict_matches = s.get("dict_sense_matches", {})
-        if dict_matches:
-            match_parts = []
-            dict_short = {"urimalsaem": "우", "stdict": "표", "kbd": "기"}
-            for src in ["urimalsaem", "stdict", "kbd"]:
-                val = dict_matches.get(src)
-                if val is not None:
-                    match_parts.append(f"{dict_short[src]} {val}")
-                else:
-                    match_parts.append(f"{dict_short[src]} 신의미")
-            st.caption(f"사전 매칭: {' · '.join(match_parts)}")
-
-        perspectives = s.get("perspectives_used", [])
-        if perspectives:
-            st.caption(f"적용 관점: {' · '.join(perspectives)}")
-
-        if syntax:
-            with st.expander("문법 정보 (collocates, argument structure 등)"):
-                arg = syntax.get("argument_structure")
-                if arg: st.markdown(f"**구조**: `{arg}`")
-                colls = syntax.get("collocates", [])
-                if colls: st.markdown(f"**공기어**: {', '.join(colls)}")
-                mods = syntax.get("common_modifiers", [])
-                if mods: st.markdown(f"**자주 같이 쓰이는 수식어**: {', '.join(mods)}")
-                pre = syntax.get("preceding_patterns", [])
-                if pre: st.markdown(f"**앞 패턴**: {', '.join(pre)}")
-                fol = syntax.get("following_patterns", [])
-                if fol: st.markdown(f"**뒤 패턴**: {', '.join(fol)}")
-
-    if context_distribution:
-        st.markdown("##### 📊 맥락 분포")
-        for cd in context_distribution:
-            label = cd.get("context_label", "")
-            prop = cd.get("proportion", 0)
-            desc = cd.get("description", "")
-            cluster_ids = cd.get("cluster_ids", [])
-            cluster_str = f"클러스터 {', '.join(map(str, cluster_ids))}" if cluster_ids else ""
-            st.markdown(f"- **{label}** ({prop:.0%}) — {cluster_str}")
-            if desc: st.caption(f"  {desc}")
-
-    diagnostics = claude_result.get("system_diagnostics", {})
-    if diagnostics and any(diagnostics.values()):
-        with st.expander("⚠️ 시스템 한계 자기 진단"):
-            for key, label in [
-                ("clustering_quality", "클러스터링 품질"),
-                ("headword_presence_note", "표제어 부재 비율"),
-                ("corpus_limitations", "코퍼스 한계"),
-                ("embedding_limitations", "임베딩 한계"),
-            ]:
-                val = diagnostics.get(key)
-                if val: st.markdown(f"**{label}**: {val}")
-
-    if notes:
-        with st.expander("📝 Claude 분석 메모"):
-            st.markdown(notes)
-
-    st.markdown("---")
-
-
-def trigger_validation(lemma: str, pos: str, source_id: int, status_placeholder):
-    from analyzers.cluster_usage import run_cluster
-    from analyzers.claude_analyzer import (
-        fetch_word_data, build_prompt, call_claude, save_to_db,
-    )
-    from db import get_conn
-
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT COUNT(*) FROM usage_clusters
-        WHERE lemma = %s AND pos = %s AND source_id = %s
-    """, (lemma, pos, source_id))
-    cluster_count = cur.fetchone()[0]
-    cur.close()
-    conn.close()
-
-    if cluster_count == 0:
-        status_placeholder.write("🔬 클러스터링 중... (1~5분, 용례 양에 따라)")
-        result = run_cluster(lemma, pos, source_id)
-        status_placeholder.write(f"  → 클러스터링 결과: {result.get('status')}")
-        if result.get('status') != 'success':
-            return None
-    else:
-        status_placeholder.write(f"✓ 클러스터 {cluster_count}개 이미 있음 — 검증으로 바로 진행")
-
-    status_placeholder.write("📊 검증용 데이터 모으는 중...")
-    data = fetch_word_data(lemma, pos, source_id=source_id)
-    if data is None:
-        return None
-    status_placeholder.write(f"  → 클러스터 {len(data['clusters'])}개, 세 사전 sense {len(data['dict_senses'])}개")
-
-    status_placeholder.write("🤖 Claude 호출 중... (1~3분)")
-    prompt = build_prompt(data)
-    result = call_claude(prompt)
-    if result is None:
-        return None
-
-    status_placeholder.write("💾 DB 저장 중...")
-    validation_id = save_to_db(lemma, data, result)
-    return validation_id
-
-
-def render_trigger_buttons(lemma: str, pos: str):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT s.source_id, s.name, COUNT(DISTINCT m.text_id) AS n
-        FROM morphemes m
-        JOIN texts t ON m.text_id = t.text_id
-        JOIN sources s ON s.source_id = t.source_id
-        WHERE m.lemma = %s AND m.pos = ANY(%s)
-          AND m.text_id IS NOT NULL
-        GROUP BY s.source_id, s.name
-        HAVING COUNT(DISTINCT m.text_id) >= 30
-    """, (lemma, expand_pos(pos)))
-    text_sources = cur.fetchall()
-
-    cur.execute("""
-        SELECT 7 AS source_id, '유튜브 댓글' AS name, COUNT(DISTINCT comment_id) AS n
-        FROM morphemes
-        WHERE lemma = %s AND pos = ANY(%s)
-          AND comment_id IS NOT NULL
-        HAVING COUNT(DISTINCT comment_id) >= 30
-    """, (lemma, expand_pos(pos)))
-
-    comment_sources = cur.fetchall()
-
-    cur.close()
-    conn.close()
-
-    all_sources = list(text_sources) + list(comment_sources)
-
-    if not all_sources:
-        st.caption("이 단어는 클러스터링/검증할 만큼의 용례가 없어요 (매체별 30건 미만).")
-        return
-
-    st.markdown("##### 🚀 새로 검증하기")
-    st.caption("클러스터링 + Claude 검증을 한 번에 진행합니다 (매체별 분리, 5~10분 소요).")
-
-    cols = st.columns(len(all_sources))
-    for col, (sid, name, n) in zip(cols, all_sources):
-        with col:
-            button_label = f"🚀 {name} ({n}건)"
-            if st.button(button_label, key=f"trigger_{lemma}_{pos}_{sid}", use_container_width=True):
-                status = st.status(f"검증 진행 중: {lemma}/{pos} × {name}", expanded=True)
-                with status:
-                    placeholder = st.empty()
-                    validation_id = trigger_validation(lemma, pos, sid, placeholder)
-                    if validation_id:
-                        placeholder.write(f"✅ 완료. validation_id={validation_id}")
-                        status.update(label=f"✅ 완료: {lemma}/{pos} × {name}", state="complete")
-                        st.success("검증 완료! 페이지를 새로고침하면 결과가 보입니다.")
-                        st.cache_data.clear()
-                        st.rerun()
-                    else:
-                        placeholder.write("❌ 실패")
-                        status.update(label=f"❌ 실패: {lemma}/{pos} × {name}", state="error")
-
-
-clusters = fetch_clusters_by_source(lemma, pos)
-
-if not clusters:
-    st.info(
-        f"'{lemma}' ({pos})에 대한 클러스터링 결과가 아직 없어요. "
-        "검증 페이지에서 트리거하거나, 터미널에서 "
-        "`python3 src/cluster_usage.py {lemma} {pos} {source_id}` 돌리면 여기에 떠요."
-    )
-else:
-    by_source = defaultdict(list)
-    for c in clusters:
-        by_source[(c[1], c[2])].append(c)
-
-    tab_labels = [
-        f"{name or '(매체 미지정)'} ({len(cs)} 클러스터, {sum(c[3] for c in cs):,} 용례)"
-        for (sid, name), cs in by_source.items()
-    ]
-    tabs = st.tabs(tab_labels)
-
-    for tab, ((sid, name), cs) in zip(tabs, by_source.items()):
-        with tab:
-            for c in cs:
-                cluster_id, src_id, src_name, member_count, label = c
-                header = f"**클러스터 {cluster_id}** — {member_count:,}건"
-                if label:
-                    header += f" · {label}"
-                st.markdown(header)
-
-                examples = fetch_cluster_examples(cluster_id, lemma, limit=3)
-                if not examples:
-                    st.caption("대표 용례 없음")
-                else:
-                    for ex in examples:
-                        render_cluster_example(ex, lemma)
-                st.markdown("---")
-
-st.divider()
-
-# ---------- 검증 결과 ----------
-st.markdown("### 🔬 의미 클러스터 검증 결과")
-
-validations = fetch_validations(lemma)
-
-if not validations:
-    st.info("이 단어에 대한 검증 이력이 없어요.")
-    render_trigger_buttons(lemma, pos)
-else:
-    all_cluster_ids = set()
-    for v in validations:
-        claude_result = v[5]
-        if isinstance(claude_result, str):
-            claude_result = json.loads(claude_result)
-        for s in claude_result.get("senses", []):
-            all_cluster_ids.update(s.get("cluster_ids_merged", []))
-        for cd in claude_result.get("context_distribution", []):
-            all_cluster_ids.update(cd.get("cluster_ids", []))
-
-    source_map = fetch_cluster_source_map(tuple(sorted(all_cluster_ids)))
-
-    st.caption(f"Claude로 검증한 총 {len(validations)}건의 이력 (최근 순)")
-    for v in validations:
-        render_validation_card(v, source_map)
-
-    st.markdown("---")
-    render_trigger_buttons(lemma, pos)
+col1, col2 = st.columns([3, 1])
+with col1:
+    st.info("더 상세한 의미 분석(클러스터링 + Claude 검증)은 별도 페이지에서 확인하세요.")
+with col2:
+    if st.button("🚀 AI 분석 페이지로", use_container_width=True, type="primary"):
+        st.query_params["word"] = lemma
+        st.switch_page("pages/5_AI_의미_분석.py")

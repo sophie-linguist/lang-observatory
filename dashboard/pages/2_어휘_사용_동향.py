@@ -12,13 +12,10 @@ import pandas as pd
 
 st.set_page_config(page_title="어휘 사용 동향", layout="wide")
 
-import sys
-sys.path.insert(0, "/home/ssohe/lang-observatory/dashboard")
-from auth import check_password
-from auth import AUTH_TOKEN
-check_password()
-
-st.title("어휘 사용 동향")
+st.markdown("""<div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 24px; border-radius: 16px; color: white; margin-bottom: 24px;'>
+<div style='font-size: 28px; font-weight: 700; margin-bottom: 8px;'>📈 어휘 사용 동향</div>
+<div style='font-size: 16px; opacity: 0.95;'>시간에 따른 단어 사용 빈도 변화와 신규 어휘 발견</div>
+</div>""", unsafe_allow_html=True)
 
 st.markdown("""
 <style>
@@ -102,11 +99,85 @@ h3 {
 
 /* 테이블 링크 스타일 */
 .scroll-container a {
-    color: #2563EB !important;
+    color: #667eea !important;
     text-decoration: none !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
 }
 .scroll-container a:hover {
+    color: #764ba2 !important;
     text-decoration: underline !important;
+}
+
+/* Radio 버튼 컨테이너 디자인 */
+[data-testid="stRadio"] {
+    background-color: white !important;
+    padding: 12px 16px !important;
+    border-radius: 10px !important;
+    border: 1px solid #E2E8F0 !important;
+}
+[data-testid="stRadio"] label {
+    padding: 8px 16px !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+}
+[data-testid="stRadio"] label:hover {
+    background-color: #F8FAFC !important;
+}
+
+/* 스크롤 컨테이너 개선 */
+.scroll-container {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+    transition: box-shadow 0.2s ease !important;
+}
+.scroll-container:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* 사이드바 디자인 */
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%) !important;
+}
+section[data-testid="stSidebar"] > div {
+    background: transparent !important;
+}
+section[data-testid="stSidebar"] * {
+    color: white !important;
+}
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3,
+section[data-testid="stSidebar"] h4 {
+    color: white !important;
+    font-weight: 600 !important;
+}
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] span,
+section[data-testid="stSidebar"] div {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+section[data-testid="stSidebar"] hr {
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    margin: 20px 0 !important;
+}
+section[data-testid="stSidebar"] button {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 10px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+    padding: 10px 16px !important;
+}
+section[data-testid="stSidebar"] button:hover {
+    background-color: rgba(255, 255, 255, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+section[data-testid="stSidebar"] button p {
+    color: white !important;
+    font-weight: 500 !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -141,11 +212,23 @@ COMPARISONS = {
     "이번 주 vs 지난 28일": (7, 28),
 }
 
-axis_label = st.radio("비교 축", list(COMPARISONS.keys()), horizontal=True, index=1)
-this_days, prev_days = COMPARISONS[axis_label]
-st.caption(f"최근 {this_days}일 vs 그 이전 {prev_days}일 평균 데이터 기준")
-st.divider()
+# 비교 축 선택 카드
+st.markdown("""<div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 18px; border-radius: 12px; color: white; margin-bottom: 20px;'>
+<div style='font-size: 18px; font-weight: 600; margin-bottom: 10px;'>📊 분석 기간 설정</div>
+<div style='font-size: 14px; opacity: 0.9;'>비교할 기간을 선택하세요</div>
+</div>""", unsafe_allow_html=True)
 
+axis_label = st.radio("비교 축", list(COMPARISONS.keys()), horizontal=True, index=1, label_visibility="collapsed")
+this_days, prev_days = COMPARISONS[axis_label]
+
+info_html = f"""<div style='background: #f8fafc; border-left: 4px solid #6366f1; padding: 12px; border-radius: 6px; margin: 12px 0;'>
+<div style='font-size: 13px; color: #334155;'>
+📅 <strong>최근 {this_days}일</strong> vs <strong>그 이전 {prev_days}일</strong> 평균 데이터 기준
+</div>
+</div>"""
+st.markdown(info_html, unsafe_allow_html=True)
+
+st.divider()
 
 st.markdown("<h2>📈 사용 빈도 변화</h2>", unsafe_allow_html=True)
 
@@ -221,29 +304,37 @@ def categorize(rows):
 surge_general, surge_named = categorize(result["surge"])
 new_general,   new_named   = categorize(result["new"])
 
-# 풀 분포 표시
+# 풀 분포 카드
 all_pool = result["surge"] + result["new"]
 dist = Counter()
 for row in all_pool:
     ent = get_entity(row[0], row[1])
     dist[ent if ent else "일반어"] += 1
 
-dist_parts = []
+dist_badges = []
 for ent, cnt in sorted(dist.items(), key=lambda x: -x[1]):
     if ent == "일반어":
-        dist_parts.append(f"일반어 {cnt}")
+        dist_badges.append(f"<span style='background: #10b981; color: white; padding: 4px 10px; border-radius: 6px; font-size: 13px; margin-right: 6px;'>일반어 {cnt}</span>")
     else:
         label = ENTITY_TAGS.get(ent, f"❓ {ent}")
-        dist_parts.append(f"{label} {cnt}")
-st.caption(f"이번 풀 분포 ({len(all_pool)}건): " + " · ".join(dist_parts))
+        dist_badges.append(f"<span style='background: #f59e0b; color: white; padding: 4px 10px; border-radius: 6px; font-size: 13px; margin-right: 6px;'>{label} {cnt}</span>")
 
+dist_html = f"""<div style='background: white; border: 1px solid #e2e8f0; padding: 14px; border-radius: 8px; margin: 16px 0;'>
+<div style='font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 10px;'>📊 분석 대상 분포 (총 {len(all_pool)}건)</div>
+<div>{''.join(dist_badges)}</div>
+</div>"""
+st.markdown(dist_html, unsafe_allow_html=True)
 
-# 분류 필터
+# 분류 필터 카드
+st.markdown("""<div style='background: white; border: 1px solid #e2e8f0; padding: 14px; border-radius: 8px; margin: 16px 0;'>
+<div style='font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 10px;'>🔍 분류 필터</div>
+</div>""", unsafe_allow_html=True)
 
 filter_choice = st.radio(
     "분류 필터",
     ["일반어", "개체명"],
     horizontal=True,
+    label_visibility="collapsed"
 )
 
 if filter_choice == "일반어":
@@ -259,9 +350,10 @@ SEARCH_PAGE = "/어휘_의미_탐색"
 col_surge, col_new = st.columns(2)
 
 with col_surge:
-    st.markdown(f"### 📊 빈도 급등 ({len(surge_show)}건)")
-    
-    st.caption("이전에도 사용되던 단어 중 최근 사용량이 급격히 증가한 항목")
+    st.markdown(f"""<div style='background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 14px; border-radius: 12px 12px 0 0; color: white;'>
+<div style='font-size: 16px; font-weight: 600;'>📊 빈도 급등 ({len(surge_show)}건)</div>
+<div style='font-size: 12px; opacity: 0.9; margin-top: 4px;'>이전에도 사용되던 단어 중 최근 사용량이 급격히 증가한 항목</div>
+</div>""", unsafe_allow_html=True)
 
     if not surge_show:
         st.info("해당 분류에 단어가 없습니다.")
@@ -271,13 +363,15 @@ with col_surge:
         for lemma, pos, this_cnt, prev_avg, ratio in surge_show:
             tag = get_tag(lemma, pos)
             tag_str = f"<code>{tag}</code>" if tag else "-"
-            html += f"<tr><td><a href='{SEARCH_PAGE}?word={lemma}&auth={AUTH_TOKEN}' target='_self'><strong>{lemma}</strong></a></td><td>{tag_str}</td><td style='text-align: right;'><strong>{this_cnt:,}</strong></td><td style='text-align: right;'>{float(prev_avg):.1f}</td><td style='text-align: right;'><code>{ratio:.1f}배</code></td></tr>"
+            html += f"<tr><td><a href='{SEARCH_PAGE}?word={lemma}' target='_self'><strong>{lemma}</strong></a></td><td>{tag_str}</td><td style='text-align: right;'><strong>{this_cnt:,}</strong></td><td style='text-align: right;'>{float(prev_avg):.1f}</td><td style='text-align: right;'><code>{ratio:.1f}배</code></td></tr>"
         html += "</tbody></table></div>"
         st.markdown(html, unsafe_allow_html=True)
 
 with col_new:
-    st.markdown(f"### ✨ 신규 등장 ({len(new_show)}건)")
-    st.caption("이전 비교 대상 구간에서는 발견되지 않았던 새로운 항목")
+    st.markdown(f"""<div style='background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 14px; border-radius: 12px 12px 0 0; color: white;'>
+<div style='font-size: 16px; font-weight: 600;'>✨ 신규 등장 ({len(new_show)}건)</div>
+<div style='font-size: 12px; opacity: 0.9; margin-top: 4px;'>이전 비교 대상 구간에서는 발견되지 않았던 새로운 항목</div>
+</div>""", unsafe_allow_html=True)
 
     if not new_show:
         st.info("해당 분류에 단어가 없습니다.")
@@ -286,7 +380,7 @@ with col_new:
         for lemma, pos, this_cnt in new_show:
             tag = get_tag(lemma, pos)
             tag_str = f"<code>{tag}</code>" if tag else "-"
-            html += f"<tr><td><a href='{SEARCH_PAGE}?word={lemma}&auth={AUTH_TOKEN}' target='_self'><strong>{lemma}</strong></a></td><td>{tag_str}</td><td style='text-align: right;'><strong>{this_cnt:,}</strong></td></tr>"
+            html += f"<tr><td><a href='{SEARCH_PAGE}?word={lemma}' target='_self'><strong>{lemma}</strong></a></td><td>{tag_str}</td><td style='text-align: right;'><strong>{this_cnt:,}</strong></td></tr>"
         html += "</tbody></table></div>"
         st.markdown(html, unsafe_allow_html=True)
 
@@ -303,11 +397,11 @@ def load_keyness(this_days, prev_days, top_n=30):
     return result
 
 
-st.markdown("<h2>🔍 매체별 키워드 (Log-Likelihood)</h2>", unsafe_allow_html=True)
-st.caption(
-   f"각 매체에서 최근 {this_days}일 구간 동안 통계적으로 특이한 출현 경향을 보인 명사(NNG·NNP) 목록입니다. "
-    "상단 분류 필터 옵션이 동일하게 반영됩니다."
-)
+st.markdown(f"""<div style='background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 18px; border-radius: 12px; color: white; margin: 24px 0 16px 0;'>
+<div style='font-size: 18px; font-weight: 600; margin-bottom: 8px;'>🔍 매체별 키워드 (Log-Likelihood)</div>
+<div style='font-size: 14px; opacity: 0.9;'>각 매체에서 최근 {this_days}일 구간 동안 통계적으로 특이한 출현 경향을 보인 명사(NNG·NNP) 목록입니다.</div>
+<div style='font-size: 13px; opacity: 0.85; margin-top: 4px;'>상단 분류 필터 옵션이 동일하게 반영됩니다.</div>
+</div>""", unsafe_allow_html=True)
 
 keyness = load_keyness(this_days, prev_days, top_n=50)
 keyness = {k: v for k, v in keyness.items() if k != "유튜브 영상"}
@@ -324,7 +418,10 @@ else:
                 filtered = [r for r in items if get_entity(r[0], "NNG") in NAMED_ENTITIES]
             shown = filtered[:50]
 
-            st.markdown(f"### {source_name} ({len(shown)}건)")
+            st.markdown(f"""<div style='background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); padding: 12px; border-radius: 10px 10px 0 0; color: white; margin-top: 10px;'>
+<div style='font-size: 15px; font-weight: 600;'>{source_name}</div>
+<div style='font-size: 12px; opacity: 0.9;'>{len(shown)}건</div>
+</div>""", unsafe_allow_html=True)
             if not shown:
                 st.info("조건에 맞는 단어가 없습니다.")
             else:
@@ -332,7 +429,7 @@ else:
                 for lemma, this_cnt, prev_cnt, ll in shown:
                     tag = get_tag(lemma, "NNG")
                     tag_str = f"<code>{tag}</code>" if tag else "-"
-                    html += f"<tr><td><a href='{SEARCH_PAGE}?word={lemma}&auth={AUTH_TOKEN}' target='_self'><strong>{lemma}</strong></a></td><td>{tag_str}</td><td style='text-align: right;'>{this_cnt:,}</td><td style='text-align: right;'>{prev_cnt:,}</td><td style='text-align: right;'><code>LL {ll:.0f}</code></td></tr>"
+                    html += f"<tr><td><a href='{SEARCH_PAGE}?word={lemma}' target='_self'><strong>{lemma}</strong></a></td><td>{tag_str}</td><td style='text-align: right;'>{this_cnt:,}</td><td style='text-align: right;'>{prev_cnt:,}</td><td style='text-align: right;'><code>LL {ll:.0f}</code></td></tr>"
                 html += "</tbody></table></div>"
                 st.markdown(html, unsafe_allow_html=True)
 
@@ -350,8 +447,10 @@ def load_cumulative_pool(top_n=300):
 
 
 st.divider()
-st.markdown("<h2>📚 누적 미등재어 분석 (전체 기간 기준)</h2>", unsafe_allow_html=True)
-st.caption("비교 축 설정과 무관하게 시스템 전체에 누적된 빈도를 기준으로 정렬한 사전 등재 검토 대상 가용 풀입니다.")
+st.markdown("""<div style='background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 18px; border-radius: 12px; color: white; margin: 24px 0 16px 0;'>
+<div style='font-size: 18px; font-weight: 600; margin-bottom: 8px;'>📚 누적 미등재어 분석 (전체 기간 기준)</div>
+<div style='font-size: 14px; opacity: 0.9;'>비교 축 설정과 무관하게 시스템 전체에 누적된 빈도를 기준으로 정렬한 사전 등재 검토 대상 가용 풀입니다.</div>
+</div>""", unsafe_allow_html=True)
 
 cumulative_pool = load_cumulative_pool(top_n=300)
 
@@ -371,30 +470,32 @@ for lemma, pos, dtype, score, status in cumulative_pool:
 col_general, col_compound = st.columns(2)
 
 with col_general:
-    # 요청하신 대로 100개 노출로 확장 및 HTML 인덴트 버그 수정
     shown = general_cumulative[:100]
-    st.markdown(f"### 📂 일반 어휘 계열 ({len(shown)}건)")
-    st.caption("고유명사(NER) 및 파생/합성 동사 패턴을 제외한 일반 어휘 단위 (최대 100개 스크롤 가능)")
+    st.markdown(f"""<div style='background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 14px; border-radius: 12px 12px 0 0; color: white;'>
+<div style='font-size: 16px; font-weight: 600;'>📂 일반 어휘 계열 ({len(shown)}건)</div>
+<div style='font-size: 12px; opacity: 0.9; margin-top: 4px;'>고유명사(NER) 및 파생/합성 동사 패턴을 제외한 일반 어휘 단위 (최대 100개 스크롤 가능)</div>
+</div>""", unsafe_allow_html=True)
     
     html = "<div class='scroll-container'><table><thead><tr><th>단어</th><th style='text-align: center;'>품사</th><th>분류</th><th style='text-align: right;'>누적 빈도</th></tr></thead><tbody>"
     for lemma, pos, dtype, score, status in shown:
         tag = get_tag(lemma, pos)
         tag_str = f"<code>{tag}</code>" if tag else "-"
         score_str = f"<strong>{score:,.0f}</strong>" if score else "-"
-        html += f"<tr><td><a href='{SEARCH_PAGE}?word={lemma}&auth={AUTH_TOKEN}' target='_self'><strong>{lemma}</strong></a></td><td style='text-align: center;'><code>{pos}</code></td><td>{tag_str}</td><td style='text-align: right;'>{score_str}</td></tr>"
+        html += f"<tr><td><a href='{SEARCH_PAGE}?word={lemma}' target='_self'><strong>{lemma}</strong></a></td><td style='text-align: center;'><code>{pos}</code></td><td>{tag_str}</td><td style='text-align: right;'>{score_str}</td></tr>"
     html += "</tbody></table></div>"
     st.markdown(html, unsafe_allow_html=True)
 
 with col_compound:
-    # 요청하신 대로 100개 노출로 확장 및 HTML 인덴트 버그 수정
     shown = compound_cumulative[:100]
-    st.markdown(f"### 🔗 결합 동사 패턴 ({len(shown)}건)")
-    st.caption("~주다, ~받다, ~시키다 등 보조용언 및 파생접사가 결합된 문형 단위 (최대 100개 스크롤 가능)")
+    st.markdown(f"""<div style='background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 14px; border-radius: 12px 12px 0 0; color: white;'>
+<div style='font-size: 16px; font-weight: 600;'>🔗 결합 동사 패턴 ({len(shown)}건)</div>
+<div style='font-size: 12px; opacity: 0.9; margin-top: 4px;'>~주다, ~받다, ~시키다 등 보조용언 및 파생접사가 결합된 문형 단위 (최대 100개 스크롤 가능)</div>
+</div>""", unsafe_allow_html=True)
     
     html = "<div class='scroll-container'><table><thead><tr><th>단어</th><th style='text-align: center;'>품사</th><th style='text-align: right;'>누적 빈도</th></tr></thead><tbody>"
     for lemma, pos, dtype, score, status in shown:
         score_str = f"<strong>{score:,.0f}</strong>" if score else "-"
-        html += f"<tr><td><a href='{SEARCH_PAGE}?word={lemma}&auth={AUTH_TOKEN}' target='_self'><strong>{lemma}</strong></a></td><td style='text-align: center;'><code>{pos}</code></td><td style='text-align: right;'>{score_str}</td></tr>"
+        html += f"<tr><td><a href='{SEARCH_PAGE}?word={lemma}' target='_self'><strong>{lemma}</strong></a></td><td style='text-align: center;'><code>{pos}</code></td><td style='text-align: right;'>{score_str}</td></tr>"
     html += "</tbody></table></div>"
     st.markdown(html, unsafe_allow_html=True)
 
