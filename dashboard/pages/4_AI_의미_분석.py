@@ -19,6 +19,63 @@ sys.path.insert(0, "/home/ssohe/lang-observatory/dashboard")
 from auth import check_password
 check_password()
 
+# 분석 진행 중일 때 페이지 이탈 경고
+if st.session_state.get('analysis_running', False):
+    # 경고 배너 표시
+    st.markdown("""<div style='background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 16px 24px; border-radius: 12px; color: white; margin-bottom: 16px; border: 2px solid #b91c1c; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);'>
+    <div style='font-size: 18px; font-weight: 700; margin-bottom: 4px;'>⚠️ 분석 진행 중 - 페이지를 이동하지 마세요!</div>
+    <div style='font-size: 14px; opacity: 0.95;'>페이지를 이동하면 분석 작업이 중단됩니다. 완료될 때까지 기다려주세요.</div>
+    </div>""", unsafe_allow_html=True)
+
+    # JavaScript로 페이지 이탈 방지
+    st.components.v1.html("""
+    <script>
+    // 브라우저 탭 닫기/외부 이동 방지
+    window.onbeforeunload = function(e) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '분석이 진행 중입니다. 페이지를 떠나면 작업이 중단됩니다.';
+    };
+
+    // Streamlit 내부 페이지 전환 방지
+    function attachWarnings() {
+        const allLinks = window.parent.document.querySelectorAll('a');
+
+        allLinks.forEach(link => {
+            if (link.dataset.warningAttached) return;
+            link.dataset.warningAttached = 'true';
+
+            ['mousedown', 'click', 'mouseup'].forEach(function(eventType) {
+                link.addEventListener(eventType, function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && (href.startsWith('/') || href.includes('localhost') || href.includes('lang-observatory.com'))) {
+                        if (!confirm('⚠️ 분석이 진행 중입니다!\\n\\n페이지를 이동하면 작업이 중단됩니다.\\n\\n정말 이동하시겠습니까?')) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            e.stopImmediatePropagation();
+                            return false;
+                        }
+                    }
+                }, true);
+            });
+        });
+    }
+
+    // 초기 실행 및 동적 링크 감지
+    setTimeout(attachWarnings, 100);
+    setTimeout(attachWarnings, 500);
+    setTimeout(attachWarnings, 1000);
+
+    const observer = new MutationObserver(attachWarnings);
+    setTimeout(function() {
+        observer.observe(window.parent.document.body, {
+            childList: true,
+            subtree: true
+        });
+    }, 100);
+    </script>
+    """, height=0)
+
 st.markdown("""<div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 24px; border-radius: 16px; color: white; margin-bottom: 24px;'>
 <div style='font-size: 28px; font-weight: 700; margin-bottom: 8px;'>🤖 AI 의미 분석</div>
 <div style='font-size: 16px; opacity: 0.95;'>클러스터링과 Claude 검증으로 단어의 의미를 자동 분석합니다</div>
@@ -584,79 +641,97 @@ else:
     if selected_count > 0:
         button_label = f"🚀 선택한 {selected_count}개 매체 분석 시작"
         if st.button(button_label, type="primary", use_container_width=True):
-            # 실행 로직
-            selected_sources_list = [
+            # 분석 시작 플래그 설정 + 선택한 매체/단어 저장 후 rerun
+            st.session_state.analysis_running = True
+            st.session_state.analysis_lemma = lemma
+            st.session_state.analysis_pos = pos
+            st.session_state.analysis_sources = [
                 (sid, name, cnt) for sid, name, cnt in available_sources
                 if sid in st.session_state.selected_sources
             ]
-
-            st.markdown("---")
-            st.markdown("### 🔄 분석 진행 중...")
-
-            progress_bar = st.progress(0)
-            total = len(selected_sources_list)
-
-            for idx, (source_id, source_name, _) in enumerate(selected_sources_list):
-                with st.status(f"📊 {source_name} 분석 중...", expanded=True) as status:
-                    placeholder = st.empty()
-
-                    from analyzers.cluster_usage import run_cluster
-                    from analyzers.claude_analyzer import (
-                        fetch_word_data, build_prompt, call_claude, save_to_db,
-                    )
-
-                    # 클러스터 확인
-                    conn = get_conn()
-                    cur = conn.cursor()
-                    cur.execute("""
-                        SELECT COUNT(*) FROM usage_clusters
-                        WHERE lemma = %s AND pos = %s AND source_id = %s
-                    """, (lemma, pos, source_id))
-                    cluster_count = cur.fetchone()[0]
-                    cur.close()
-                    conn.close()
-
-                    # 클러스터링
-                    if cluster_count == 0:
-                        placeholder.write("🔬 클러스터링 중... (1~5분)")
-                        result = run_cluster(lemma, pos, source_id)
-                        if result.get('status') != 'success':
-                            placeholder.write(f"❌ 클러스터링 실패: {result.get('message')}")
-                            status.update(label=f"❌ {source_name} 실패", state="error")
-                            continue
-                        placeholder.write(f"✓ 클러스터링 완료")
-                    else:
-                        placeholder.write(f"✓ 클러스터 {cluster_count}개 이미 있음")
-
-                    # Claude 검증
-                    placeholder.write("📊 검증용 데이터 수집 중...")
-                    data = fetch_word_data(lemma, pos, source_id=source_id)
-                    if data is None:
-                        placeholder.write("❌ 데이터 수집 실패")
-                        status.update(label=f"❌ {source_name} 실패", state="error")
-                        continue
-
-                    placeholder.write("🤖 Claude 호출 중... (1~3분)")
-                    prompt = build_prompt(data)
-                    result = call_claude(prompt)
-                    if result is None:
-                        placeholder.write("❌ Claude 호출 실패")
-                        status.update(label=f"❌ {source_name} 실패", state="error")
-                        continue
-
-                    placeholder.write("💾 DB 저장 중...")
-                    validation_id = save_to_db(lemma, data, result)
-
-                    placeholder.write(f"✅ 완료! validation_id={validation_id}")
-                    status.update(label=f"✅ {source_name} 완료", state="complete")
-
-                # 진행률 업데이트
-                progress_bar.progress((idx + 1) / total)
-
-            st.success(f"🎉 {selected_count}개 매체 분석 완료! 아래 탭에서 결과를 확인하세요.")
-            st.session_state.selected_sources = set()  # 초기화
-            st.cache_data.clear()
             st.rerun()
+
+# 분석 실행 (rerun 후)
+if st.session_state.get('analysis_running', False) and st.session_state.get('analysis_sources'):
+    # session_state에서 단어 정보 가져오기
+    lemma = st.session_state.get('analysis_lemma')
+    pos = st.session_state.get('analysis_pos')
+
+    if lemma and pos:
+        selected_sources_list = st.session_state.analysis_sources
+
+        st.markdown("---")
+        st.markdown("### 🔄 분석 진행 중...")
+
+        progress_bar = st.progress(0)
+        total = len(selected_sources_list)
+
+        for idx, (source_id, source_name, _) in enumerate(selected_sources_list):
+            with st.status(f"📊 {source_name} 분석 중...", expanded=True) as status:
+                placeholder = st.empty()
+
+                from analyzers.cluster_usage import run_cluster
+                from analyzers.claude_analyzer import (
+                    fetch_word_data, build_prompt, call_claude, save_to_db,
+                )
+
+                # 클러스터 확인
+                conn = get_conn()
+                cur = conn.cursor()
+                cur.execute("""
+                    SELECT COUNT(*) FROM usage_clusters
+                    WHERE lemma = %s AND pos = %s AND source_id = %s
+                """, (lemma, pos, source_id))
+                cluster_count = cur.fetchone()[0]
+                cur.close()
+                conn.close()
+
+                # 클러스터링
+                if cluster_count == 0:
+                    placeholder.write("🔬 클러스터링 중... (1~5분)")
+                    result = run_cluster(lemma, pos, source_id)
+                    if result.get('status') != 'success':
+                        placeholder.write(f"❌ 클러스터링 실패: {result.get('message')}")
+                        status.update(label=f"❌ {source_name} 실패", state="error")
+                        continue
+                    placeholder.write(f"✓ 클러스터링 완료")
+                else:
+                    placeholder.write(f"✓ 클러스터 {cluster_count}개 이미 있음")
+
+                # Claude 검증
+                placeholder.write("📊 검증용 데이터 수집 중...")
+                data = fetch_word_data(lemma, pos, source_id=source_id)
+                if data is None:
+                    placeholder.write("❌ 데이터 수집 실패")
+                    status.update(label=f"❌ {source_name} 실패", state="error")
+                    continue
+
+                placeholder.write("🤖 Claude 호출 중... (1~3분)")
+                prompt = build_prompt(data)
+                result = call_claude(prompt)
+                if result is None:
+                    placeholder.write("❌ Claude 호출 실패")
+                    status.update(label=f"❌ {source_name} 실패", state="error")
+                    continue
+
+                placeholder.write("💾 DB 저장 중...")
+                validation_id = save_to_db(lemma, data, result)
+
+                placeholder.write(f"✅ 완료! validation_id={validation_id}")
+                status.update(label=f"✅ {source_name} 완료", state="complete")
+
+            # 진행률 업데이트
+            progress_bar.progress((idx + 1) / total)
+
+        st.success(f"🎉 {len(selected_sources_list)}개 매체 분석 완료! 아래 탭에서 결과를 확인하세요.")
+        # 분석 완료 - 모든 플래그 초기화
+        st.session_state.selected_sources = set()
+        st.session_state.analysis_running = False
+        st.session_state.analysis_sources = None
+        st.session_state.analysis_lemma = None
+        st.session_state.analysis_pos = None
+        st.cache_data.clear()
+        st.rerun()
 
 st.divider()
 
