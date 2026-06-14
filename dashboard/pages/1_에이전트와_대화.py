@@ -96,29 +96,91 @@ section[data-testid="stSidebar"] button p {
     font-weight: 500 !important;
 }
 
-/* 채팅 입력창 디자인 */
+/* 채팅 입력창 → 현대적 디자인 */
 [data-testid="stChatInput"] {
     border: 2px solid #E2E8F0 !important;
-    border-radius: 12px !important;
-    padding: 4px !important;
-    background-color: white !important;
+    border-radius: 24px !important;
+    padding: 8px !important;
+    background: white !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.3s ease !important;
 }
 [data-testid="stChatInput"]:focus-within {
     border-color: #667eea !important;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2) !important;
+    transform: translateY(-2px) !important;
+}
+[data-testid="stChatInput"] textarea {
+    font-size: 15px !important;
+    line-height: 1.5 !important;
 }
 
-/* 채팅 메시지 디자인 */
-[data-testid="stChatMessage"] {
-    background-color: #F8FAFC !important;
-    border-radius: 12px !important;
-    padding: 16px !important;
-    margin: 8px 0 !important;
-    border: 1px solid #E2E8F0 !important;
+/* 채팅 메시지 컨테이너 */
+[data-testid="stChatMessageContainer"] {
+    padding: 0 !important;
 }
+
+/* AI 메시지 (assistant) - 왼쪽 정렬, 연한 배경 */
+[data-testid="stChatMessage"]:not([data-testid*="user"]) {
+    background: white !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 18px 18px 18px 4px !important;
+    padding: 16px 20px !important;
+    margin: 12px 60px 12px 60px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* 사용자 메시지 (user) - 오른쪽 정렬, 그라데이션 배경 */
 [data-testid="stChatMessage"][data-testid*="user"] {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    border-radius: 18px 18px 4px 18px !important;
+    padding: 16px 20px !important;
+    margin: 12px 60px !important;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+}
+[data-testid="stChatMessage"][data-testid*="user"] * {
     color: white !important;
+}
+
+/* 아바타 스타일링 */
+[data-testid="stChatMessage"] img,
+[data-testid="stChatMessage"] svg {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    border: 2px solid white !important;
+}
+/* AI 아바타 - 그라데이션 배경 */
+[data-testid="stChatMessage"]:not([data-testid*="user"]) img,
+[data-testid="stChatMessage"]:not([data-testid*="user"]) svg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    padding: 6px !important;
+}
+/* 사용자 아바타 - 흰색 배경 */
+[data-testid="stChatMessage"][data-testid*="user"] img,
+[data-testid="stChatMessage"][data-testid*="user"] svg {
+    background: white !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+/* 메시지 텍스트 스타일 */
+[data-testid="stChatMessage"] p {
+    font-size: 15px !important;
+    line-height: 1.6 !important;
+    margin: 0 !important;
+}
+
+/* 코드 블록 in 채팅 */
+[data-testid="stChatMessage"] code {
+    background: rgba(0, 0, 0, 0.05) !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-size: 13px !important;
+}
+[data-testid="stChatMessage"][data-testid*="user"] code {
+    background: rgba(255, 255, 255, 0.2) !important;
 }
 </style>
 """, unsafe_allow_html=True)

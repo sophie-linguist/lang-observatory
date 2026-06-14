@@ -121,6 +121,7 @@ def main():
 
     processed = 0
     last_id = 0
+    total_errors = 0
     start_time = time.time()
 
     while True:
@@ -144,20 +145,26 @@ def main():
         all_tokens = kiwi.tokenize(texts)
 
         buf = io.StringIO()
+        errors = []
         for idx, tokens in enumerate(all_tokens):
             eid = embedding_ids[idx]
-            merged = merge_tokens(tokens, texts[idx])
+            try:
+                merged = merge_tokens(tokens, texts[idx])
 
-            seen = set()
-            for lemma, pos in merged:
-                if not lemma or len(lemma) > 100 or len(pos) > 10:
-                    continue
-                key = (lemma, pos)
-                if key in seen:
-                    continue
-                seen.add(key)
-                clean = lemma.replace('\t', ' ').replace('\n', ' ').replace('\r', ' ')
-                buf.write(f"{eid}\t{clean}\t{pos}\n")
+                seen = set()
+                for lemma, pos in merged:
+                    if not lemma or len(lemma) > 100 or len(pos) > 10:
+                        continue
+                    key = (lemma, pos)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    clean = lemma.replace('\t', ' ').replace('\n', ' ').replace('\r', ' ')
+                    buf.write(f"{eid}\t{clean}\t{pos}\n")
+            except Exception as e:
+                # 개별 segment 에러는 로그만 남기고 계속 진행
+                errors.append((eid, str(e)))
+                continue
 
         if buf.tell() > 0:
             buf.seek(0)
@@ -166,6 +173,12 @@ def main():
                 columns=('embedding_id', 'lemma', 'pos')
             )
             conn.commit()
+
+        # 에러 로그
+        if errors:
+            total_errors += len(errors)
+            for eid, err in errors:
+                print(f"  ⚠️  embedding_id={eid}: {err}")
 
         processed += len(batch)
 
@@ -179,6 +192,9 @@ def main():
 
     elapsed = time.time() - start_time
     print(f"\n완료: {processed:,}건, {elapsed/60:.1f}분")
+    if total_errors > 0:
+        print(f"⚠️  에러 발생: {total_errors:,}건 (스킵됨)")
+        print(f"✅ 성공: {processed - total_errors:,}건 ({(processed-total_errors)/processed*100:.1f}%)")
 
     print("\n인덱스 생성 중...")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_seg_lemma_map_lemma_pos ON segment_lemma_map(lemma, pos)")

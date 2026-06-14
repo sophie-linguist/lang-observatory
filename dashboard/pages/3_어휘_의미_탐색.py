@@ -78,24 +78,51 @@ table td, table th {
     color: #1E293B !important;
 }
 
-/* 팝오버 및 일반 실행 버튼 일괄 모던화 및 크기 정돈 */
-div[data-testid="stPopover"] > button, div[data-testid="stButton"] > button {
-    width: 100% !important;
+/* 버튼 기본 스타일 */
+div[data-testid="stButton"] > button {
     background-color: #F8FAFC !important;
     border: 1px solid #E2E8F0 !important;
     border-radius: 8px !important;
     color: #475569 !important;
-    font-size: 13.5px !important;
+    font-size: 14px !important;
     font-weight: 500 !important;
-    padding: 8px 14px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
+    padding: 10px 20px !important;
     transition: all 0.2s ease !important;
+    min-width: 120px !important;
+}
+div[data-testid="stButton"] > button:hover {
+    background-color: #F1F5F9 !important;
+    border-color: #CBD5E1 !important;
+    color: #0F172A !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
 }
 
-div[data-testid="stPopover"] > button:hover, div[data-testid="stButton"] > button:hover {
+/* Primary 버튼 스타일 */
+div[data-testid="stButton"] > button[kind="primary"],
+div[data-testid="stButton"] > button[data-baseweb="button"][kind="primary"] {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+div[data-testid="stButton"] > button[kind="primary"]:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%) !important;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+}
+
+/* Popover 버튼 (더 작게) */
+div[data-testid="stPopover"] > button {
+    background-color: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    color: #475569 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    padding: 8px 14px !important;
+    transition: all 0.2s ease !important;
+}
+div[data-testid="stPopover"] > button:hover {
     background-color: #F1F5F9 !important;
     border-color: #CBD5E1 !important;
     color: #0F172A !important;
@@ -273,19 +300,43 @@ selected_pos = None
 
 if not query:
     # 초기 화면 - 기능 안내
-    st.markdown("### 🔍 어휘 의미 탐색")
-
-    st.markdown("""
-    단어를 검색하면 다음 정보를 확인할 수 있습니다:
-
-    - 📊 **사용 빈도**: 코퍼스 내 출현 빈도와 기간
-    - 📖 **사전 정보**: 우리말샘, 표준국어대사전, 기초사전 비교
-    - 📈 **시계열 분석**: 매체별 사용 추이 그래프
-    - 💬 **실제 용례**: 시점별 사용 예시
-    - 🆕 **신어 정보**: 신어 후보 등록 여부
-    """)
-
-    st.info("👆 위 검색창에 단어를 입력하세요")
+    st.markdown("""<div style='background: white; border: 2px solid #E2E8F0; border-radius: 16px; padding: 32px; margin: 24px 0; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);'>
+<div style='text-align: center; margin-bottom: 32px;'>
+<div style='font-size: 48px; margin-bottom: 12px;'>🔍</div>
+<div style='font-size: 24px; font-weight: 700; color: #1E293B; margin-bottom: 8px;'>어휘 의미 탐색</div>
+<div style='font-size: 15px; color: #64748b;'>단어를 검색하면 다음 정보를 확인할 수 있습니다</div>
+</div>
+<div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px;'>
+<div style='background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%); padding: 20px; border-radius: 12px; border-left: 4px solid #667eea;'>
+<div style='font-size: 28px; margin-bottom: 8px;'>📊</div>
+<div style='font-size: 16px; font-weight: 600; color: #334155; margin-bottom: 6px;'>사용 빈도</div>
+<div style='font-size: 14px; color: #64748b; line-height: 1.5;'>코퍼스 내 출현 빈도와 기간</div>
+</div>
+<div style='background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%); padding: 20px; border-radius: 12px; border-left: 4px solid #8b5cf6;'>
+<div style='font-size: 28px; margin-bottom: 8px;'>📖</div>
+<div style='font-size: 16px; font-weight: 600; color: #334155; margin-bottom: 6px;'>사전 정보</div>
+<div style='font-size: 14px; color: #64748b; line-height: 1.5;'>우리말샘, 표준국어대사전, 기초사전 비교</div>
+</div>
+<div style='background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%); padding: 20px; border-radius: 12px; border-left: 4px solid #10b981;'>
+<div style='font-size: 28px; margin-bottom: 8px;'>📈</div>
+<div style='font-size: 16px; font-weight: 600; color: #334155; margin-bottom: 6px;'>시계열 분석</div>
+<div style='font-size: 14px; color: #64748b; line-height: 1.5;'>매체별 사용 추이 그래프</div>
+</div>
+<div style='background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%); padding: 20px; border-radius: 12px; border-left: 4px solid #f59e0b;'>
+<div style='font-size: 28px; margin-bottom: 8px;'>💬</div>
+<div style='font-size: 16px; font-weight: 600; color: #334155; margin-bottom: 6px;'>실제 용례</div>
+<div style='font-size: 14px; color: #64748b; line-height: 1.5;'>시점별 사용 예시</div>
+</div>
+<div style='background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%); padding: 20px; border-radius: 12px; border-left: 4px solid #ef4444;'>
+<div style='font-size: 28px; margin-bottom: 8px;'>🆕</div>
+<div style='font-size: 16px; font-weight: 600; color: #334155; margin-bottom: 6px;'>신어 정보</div>
+<div style='font-size: 14px; color: #64748b; line-height: 1.5;'>신어 후보 등록 여부</div>
+</div>
+</div>
+<div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 16px; border-radius: 12px; text-align: center;'>
+<div style='font-size: 15px; color: white; font-weight: 500;'>👆 위 검색창에 단어를 입력하세요</div>
+</div>
+</div>""", unsafe_allow_html=True)
     st.stop()
 else:
     df_cand = fetch_candidates(query)

@@ -74,24 +74,51 @@ table td, table th {
     color: #1E293B !important;
 }
 
-/* 팝오버 및 일반 실행 버튼 일괄 모던화 및 크기 정돈 */
-div[data-testid="stPopover"] > button, div[data-testid="stButton"] > button {
-    width: 100% !important;
+/* 버튼 기본 스타일 */
+div[data-testid="stButton"] > button {
     background-color: #F8FAFC !important;
     border: 1px solid #E2E8F0 !important;
     border-radius: 8px !important;
     color: #475569 !important;
-    font-size: 13.5px !important;
+    font-size: 14px !important;
     font-weight: 500 !important;
-    padding: 8px 14px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
+    padding: 10px 20px !important;
     transition: all 0.2s ease !important;
+    min-width: 120px !important;
+}
+div[data-testid="stButton"] > button:hover {
+    background-color: #F1F5F9 !important;
+    border-color: #CBD5E1 !important;
+    color: #0F172A !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
 }
 
-div[data-testid="stPopover"] > button:hover, div[data-testid="stButton"] > button:hover {
+/* Primary 버튼 스타일 */
+div[data-testid="stButton"] > button[kind="primary"],
+div[data-testid="stButton"] > button[data-baseweb="button"][kind="primary"] {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+div[data-testid="stButton"] > button[kind="primary"]:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%) !important;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+}
+
+/* Popover 버튼 (더 작게) */
+div[data-testid="stPopover"] > button {
+    background-color: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    color: #475569 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    padding: 8px 14px !important;
+    transition: all 0.2s ease !important;
+}
+div[data-testid="stPopover"] > button:hover {
     background-color: #F1F5F9 !important;
     border-color: #CBD5E1 !important;
     color: #0F172A !important;
@@ -110,11 +137,12 @@ input[type="text"]:focus {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
 }
 
-/* Dataframe 테이블 디자인 */
+/* Dataframe 테이블 → 프리미엄 디자인 */
 [data-testid="stDataFrame"] {
-    border: 1px solid #E2E8F0 !important;
+    border: 2px solid #E2E8F0 !important;
     border-radius: 12px !important;
     overflow: hidden !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
 }
 [data-testid="stDataFrame"] thead {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
@@ -122,10 +150,31 @@ input[type="text"]:focus {
 [data-testid="stDataFrame"] thead th {
     color: white !important;
     font-weight: 600 !important;
-    padding: 12px !important;
+    padding: 14px 16px !important;
+    font-size: 14px !important;
+    letter-spacing: 0.3px !important;
+}
+[data-testid="stDataFrame"] tbody td {
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+}
+[data-testid="stDataFrame"] tbody tr {
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
 }
 [data-testid="stDataFrame"] tbody tr:hover {
-    background-color: #F8FAFC !important;
+    background: linear-gradient(90deg, #F8FAFC 0%, #EEF2FF 100%) !important;
+    transform: scale(1.01) !important;
+}
+/* 선택된 행 강조 */
+[data-testid="stDataFrame"] tbody tr[aria-selected="true"] {
+    background: linear-gradient(90deg, #E0E7FF 0%, #DDD6FE 100%) !important;
+    border-left: 4px solid #667eea !important;
+    font-weight: 600 !important;
+}
+[data-testid="stDataFrame"] tbody tr[aria-selected="true"] td {
+    color: #1E293B !important;
 }
 
 /* Metric 카드 디자인 */
@@ -136,14 +185,39 @@ input[type="text"]:focus {
     border: 1px solid #E2E8F0 !important;
 }
 
-/* Checkbox 디자인 */
+/* Checkbox → 카드 스타일 */
 [data-testid="stCheckbox"] {
-    padding: 8px !important;
-    border-radius: 6px !important;
+    background: white !important;
+    border: 2px solid #E2E8F0 !important;
+    border-radius: 10px !important;
+    padding: 12px 16px !important;
     transition: all 0.2s ease !important;
+    margin: 6px 0 !important;
 }
 [data-testid="stCheckbox"]:hover {
-    background-color: #F8FAFC !important;
+    border-color: #667eea !important;
+    background: #F8FAFC !important;
+    transform: translateX(4px) !important;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1) !important;
+}
+[data-testid="stCheckbox"] label {
+    cursor: pointer !important;
+    font-weight: 500 !important;
+}
+[data-testid="stCheckbox"] input[type="checkbox"]:checked ~ label {
+    color: #667eea !important;
+    font-weight: 600 !important;
+}
+/* 체크박스 자체 스타일 */
+[data-testid="stCheckbox"] input[type="checkbox"] {
+    width: 20px !important;
+    height: 20px !important;
+    border: 2px solid #CBD5E1 !important;
+    border-radius: 6px !important;
+}
+[data-testid="stCheckbox"] input[type="checkbox"]:checked {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border-color: #667eea !important;
 }
 
 /* Progress bar 디자인 */
@@ -280,26 +354,65 @@ selected_pos = None
 
 if not query:
     # 초기 화면 - 기능 안내
-    st.markdown("### 🤖 AI 의미 분석")
-
-    st.markdown("""
-    클러스터링과 Claude API를 활용한 자동 의미 분석 시스템입니다.
-
-    **주요 기능:**
-    - 🧬 **의미 클러스터링**: 임베딩 기반 자동 의미 분류 (UMAP + HDBSCAN)
-    - 🤖 **Claude 검증**: AI가 클러스터를 분석하여 정의문 생성
-    - 🚀 **매체별 분석**: 네이버 뉴스, 유튜브 댓글 등 매체 단위로 분리 분석
-    - 📊 **검증 이력**: 과거 분석 결과 조회 및 비교
-
-    **분석 과정:**
-    1. 단어 검색 → 임베딩 세그먼트 확인
-    2. 매체 선택 → 클러스터링 실행 (5~10분)
-    3. Claude가 클러스터 분석 → 의미 정의문 생성
-    4. 결과 저장 → 탭에서 확인
-    """)
-
-    st.warning("⚠️ 이 페이지는 비밀번호로 보호됩니다 (Claude API 비용 발생)")
-    st.info("👆 위 검색창에 단어를 입력하세요")
+    st.markdown("""<div style='background: white; border: 2px solid #E2E8F0; border-radius: 16px; padding: 32px; margin: 24px 0; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);'>
+<div style='text-align: center; margin-bottom: 32px;'>
+<div style='font-size: 48px; margin-bottom: 12px;'>🤖</div>
+<div style='font-size: 24px; font-weight: 700; color: #1E293B; margin-bottom: 8px;'>AI 의미 분석</div>
+<div style='font-size: 15px; color: #64748b;'>클러스터링과 Claude API를 활용한 자동 의미 분석 시스템</div>
+</div>
+<div style='margin-bottom: 28px;'>
+<div style='font-size: 18px; font-weight: 600; color: #334155; margin-bottom: 16px; padding-left: 12px; border-left: 4px solid #667eea;'>주요 기능</div>
+<div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;'>
+<div style='background: #F8FAFC; padding: 16px; border-radius: 10px; border: 1px solid #E2E8F0;'>
+<div style='font-size: 20px; margin-bottom: 6px;'>🧬</div>
+<div style='font-size: 15px; font-weight: 600; color: #334155; margin-bottom: 4px;'>의미 클러스터링</div>
+<div style='font-size: 13px; color: #64748b; line-height: 1.4;'>임베딩 기반 자동 의미 분류 (UMAP + HDBSCAN)</div>
+</div>
+<div style='background: #F8FAFC; padding: 16px; border-radius: 10px; border: 1px solid #E2E8F0;'>
+<div style='font-size: 20px; margin-bottom: 6px;'>🤖</div>
+<div style='font-size: 15px; font-weight: 600; color: #334155; margin-bottom: 4px;'>Claude 검증</div>
+<div style='font-size: 13px; color: #64748b; line-height: 1.4;'>AI가 클러스터를 분석하여 정의문 생성</div>
+</div>
+<div style='background: #F8FAFC; padding: 16px; border-radius: 10px; border: 1px solid #E2E8F0;'>
+<div style='font-size: 20px; margin-bottom: 6px;'>🚀</div>
+<div style='font-size: 15px; font-weight: 600; color: #334155; margin-bottom: 4px;'>매체별 분석</div>
+<div style='font-size: 13px; color: #64748b; line-height: 1.4;'>네이버 뉴스, 유튜브 댓글 등 매체 단위로 분리</div>
+</div>
+<div style='background: #F8FAFC; padding: 16px; border-radius: 10px; border: 1px solid #E2E8F0;'>
+<div style='font-size: 20px; margin-bottom: 6px;'>📊</div>
+<div style='font-size: 15px; font-weight: 600; color: #334155; margin-bottom: 4px;'>검증 이력</div>
+<div style='font-size: 13px; color: #64748b; line-height: 1.4;'>과거 분석 결과 조회 및 비교</div>
+</div>
+</div>
+</div>
+<div style='margin-bottom: 24px;'>
+<div style='font-size: 18px; font-weight: 600; color: #334155; margin-bottom: 16px; padding-left: 12px; border-left: 4px solid #8b5cf6;'>분석 과정</div>
+<div style='display: grid; gap: 10px;'>
+<div style='background: linear-gradient(90deg, #F8FAFC 0%, white 100%); padding: 14px 18px; border-radius: 10px; border-left: 3px solid #667eea; display: flex; align-items: center; gap: 12px;'>
+<div style='background: #667eea; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0;'>1</div>
+<div style='font-size: 14px; color: #334155;'><strong>단어 검색</strong> → 임베딩 세그먼트 확인</div>
+</div>
+<div style='background: linear-gradient(90deg, #F8FAFC 0%, white 100%); padding: 14px 18px; border-radius: 10px; border-left: 3px solid #8b5cf6; display: flex; align-items: center; gap: 12px;'>
+<div style='background: #8b5cf6; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0;'>2</div>
+<div style='font-size: 14px; color: #334155;'><strong>매체 선택</strong> → 클러스터링 실행 (5~10분)</div>
+</div>
+<div style='background: linear-gradient(90deg, #F8FAFC 0%, white 100%); padding: 14px 18px; border-radius: 10px; border-left: 3px solid #6366f1; display: flex; align-items: center; gap: 12px;'>
+<div style='background: #6366f1; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0;'>3</div>
+<div style='font-size: 14px; color: #334155;'><strong>Claude 분석</strong> → 의미 정의문 생성</div>
+</div>
+<div style='background: linear-gradient(90deg, #F8FAFC 0%, white 100%); padding: 14px 18px; border-radius: 10px; border-left: 3px solid #10b981; display: flex; align-items: center; gap: 12px;'>
+<div style='background: #10b981; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0;'>4</div>
+<div style='font-size: 14px; color: #334155;'><strong>결과 저장</strong> → 탭에서 확인</div>
+</div>
+</div>
+</div>
+<div style='background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 14px 18px; border-radius: 10px; margin-bottom: 12px; border-left: 4px solid #f59e0b;'>
+<div style='font-size: 14px; color: #78350f; font-weight: 500;'>⚠️ 이 페이지는 비밀번호로 보호됩니다 (Claude API 비용 발생)</div>
+</div>
+<div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 16px; border-radius: 12px; text-align: center;'>
+<div style='font-size: 15px; color: white; font-weight: 500;'>👆 위 검색창에 단어를 입력하세요</div>
+</div>
+</div>""", unsafe_allow_html=True)
     st.stop()
 else:
     df_cand = fetch_candidates(query)

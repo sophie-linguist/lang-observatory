@@ -68,23 +68,50 @@ table td, table th {
     color: #1E293B !important;
 }
 
-/* 팝오버 버튼 일괄 모던화 및 크기 정돈 */
-div[data-testid="stPopover"] > button {
-    width: 100% !important;
+/* 버튼 기본 스타일 */
+div[data-testid="stButton"] > button {
     background-color: #F8FAFC !important;
     border: 1px solid #E2E8F0 !important;
     border-radius: 8px !important;
     color: #475569 !important;
-    font-size: 13.5px !important;
+    font-size: 14px !important;
     font-weight: 500 !important;
-    padding: 8px 12px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
+    padding: 10px 20px !important;
     transition: all 0.2s ease !important;
+    min-width: 120px !important;
+}
+div[data-testid="stButton"] > button:hover {
+    background-color: #F1F5F9 !important;
+    border-color: #CBD5E1 !important;
+    color: #0F172A !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
 }
 
+/* Primary 버튼 스타일 */
+div[data-testid="stButton"] > button[kind="primary"],
+div[data-testid="stButton"] > button[data-baseweb="button"][kind="primary"] {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+div[data-testid="stButton"] > button[kind="primary"]:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%) !important;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+}
+
+/* Popover 버튼 (더 작게) */
+div[data-testid="stPopover"] > button {
+    background-color: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    color: #475569 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    padding: 8px 14px !important;
+    transition: all 0.2s ease !important;
+}
 div[data-testid="stPopover"] > button:hover {
     background-color: #F1F5F9 !important;
     border-color: #CBD5E1 !important;
@@ -101,12 +128,44 @@ blockquote {
     margin: 8px 0 !important;
 }
 
-/* Radio 버튼 디자인 */
+/* Radio 버튼 → 버튼 그룹 스타일 */
 [data-testid="stRadio"] {
-    background-color: #F8FAFC !important;
-    padding: 12px !important;
+    background: transparent !important;
+    padding: 0 !important;
+}
+[data-testid="stRadio"] > div {
+    display: flex !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+}
+[data-testid="stRadio"] label {
+    background: white !important;
+    border: 2px solid #E2E8F0 !important;
     border-radius: 10px !important;
-    border: 1px solid #E2E8F0 !important;
+    padding: 12px 20px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    flex: 1 !important;
+    min-width: 140px !important;
+    text-align: center !important;
+}
+[data-testid="stRadio"] label:hover {
+    border-color: #667eea !important;
+    background: #F8FAFC !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15) !important;
+}
+[data-testid="stRadio"] label[data-checked="true"] {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border-color: #667eea !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+[data-testid="stRadio"] label[data-checked="true"] span {
+    color: white !important;
+}
+[data-testid="stRadio"] input[type="radio"] {
+    display: none !important;
 }
 
 /* 사이드바 디자인 */

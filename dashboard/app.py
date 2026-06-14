@@ -1,7 +1,7 @@
 import streamlit as st
 
 st.set_page_config(
-    page_title="어휘 사용 관찰 및 발견 대시보드",
+    page_title="어휘 사용 현황 관찰 및 발견 대시보드",
     page_icon="📚",
     layout="wide",
 )
@@ -149,8 +149,8 @@ section[data-testid="stSidebar"] button p {
 
 # 메인 타이틀
 st.markdown("""<div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 32px; border-radius: 16px; color: white; margin-bottom: 32px;'>
-<div style='font-size: 36px; font-weight: 700; margin-bottom: 12px;'>📚 어휘 사용 현황 및 발견 대시보드</div>
-<div style='font-size: 18px; opacity: 0.95;'>내가 쓰려고 만든 도구</div>
+<div style='font-size: 36px; font-weight: 700; margin-bottom: 12px;'>📚 어휘 사용 현황 관찰 및 발견 대시보드</div>
+<div style='font-size: 18px; opacity: 0.95;'>개인 연구용</div>
 </div>""", unsafe_allow_html=True)
 
 # 소개 카드
@@ -232,7 +232,7 @@ with st.expander("📚 시스템 상세 문서 보기", expanded=False):
 st.markdown("<hr style='margin: 32px 0; border: 0; border-top: 2px solid #E2E8F0;'>", unsafe_allow_html=True)
 
 st.markdown("""<div style='background: #F8FAFC; padding: 16px; border-radius: 10px; border-left: 4px solid #667eea;'>
-<div style='color: #64748B; font-size: 14px;'>
-📅 <strong>시작일:</strong> 2026-03-30 · 본인이 매일 쓰는 도구 형태로 만드는 것이 원칙
+<div style='color: #64748B; font-size: 14px; line-height: 1.8;'>
+📅 <strong>개발 시작:</strong> 2026-03-30 <span style='margin: 0 8px; color: #CBD5E1;'>|</span> <strong>운영 시작:</strong> 2026-05-30
 </div>
 </div>""", unsafe_allow_html=True)

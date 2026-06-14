@@ -75,4 +75,45 @@ def check_password():
         </div>""", unsafe_allow_html=True)
         st.stop()
 
+def check_password_inline(purpose="이 기능"):
+    """
+    페이지 내부에서 특정 기능만 보호할 때 사용.
+    인증되지 않았으면 비밀번호 입력 UI를 표시하고 False 반환.
+    인증되었으면 True 반환.
+    """
+    if st.session_state.get("password_correct", False):
+        return True
+
+    correct_password = os.getenv("DASHBOARD_PASSWORD", "")
+    if not correct_password:
+        st.error("비밀번호가 설정되지 않았습니다.")
+        return False
+
+    # 인라인 비밀번호 입력 UI
+    st.markdown(f"""<div style='background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 24px; border-radius: 12px; color: white; margin: 16px 0;'>
+    <div style='font-size: 24px; margin-bottom: 8px;'>🔒 보호된 기능</div>
+    <div style='font-size: 14px; opacity: 0.95;'>{purpose}은(는) 비밀번호로 보호됩니다</div>
+    </div>""", unsafe_allow_html=True)
+
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        password = st.text_input(
+            "비밀번호",
+            type="password",
+            key=f"inline_password_{purpose}",
+            placeholder="비밀번호 입력"
+        )
+    with col2:
+        check_btn = st.button("확인", key=f"check_{purpose}", type="primary", use_container_width=True)
+
+    if check_btn:
+        if password == correct_password:
+            st.session_state["password_correct"] = True
+            st.success("✅ 인증 완료!")
+            st.rerun()
+        else:
+            st.error("❌ 비밀번호가 틀렸습니다")
+
+    return False
+
 AUTH_TOKEN = _make_token()

@@ -109,20 +109,44 @@ h3 {
     text-decoration: underline !important;
 }
 
-/* Radio 버튼 컨테이너 디자인 */
+/* Radio 버튼 → 버튼 그룹 스타일 */
 [data-testid="stRadio"] {
-    background-color: white !important;
-    padding: 12px 16px !important;
-    border-radius: 10px !important;
-    border: 1px solid #E2E8F0 !important;
+    background: transparent !important;
+    padding: 0 !important;
+}
+[data-testid="stRadio"] > div {
+    display: flex !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
 }
 [data-testid="stRadio"] label {
-    padding: 8px 16px !important;
-    border-radius: 8px !important;
+    background: white !important;
+    border: 2px solid #E2E8F0 !important;
+    border-radius: 10px !important;
+    padding: 12px 20px !important;
+    cursor: pointer !important;
     transition: all 0.2s ease !important;
+    flex: 1 !important;
+    min-width: 140px !important;
+    text-align: center !important;
 }
 [data-testid="stRadio"] label:hover {
-    background-color: #F8FAFC !important;
+    border-color: #667eea !important;
+    background: #F8FAFC !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15) !important;
+}
+[data-testid="stRadio"] label[data-checked="true"] {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border-color: #667eea !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+[data-testid="stRadio"] label[data-checked="true"] span {
+    color: white !important;
+}
+[data-testid="stRadio"] input[type="radio"] {
+    display: none !important;
 }
 
 /* 스크롤 컨테이너 개선 */
