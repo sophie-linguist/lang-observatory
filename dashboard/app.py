@@ -225,7 +225,7 @@ st.markdown(tech_html, unsafe_allow_html=True)
 with st.expander("📚 시스템 상세 문서 보기", expanded=False):
     st.markdown("""<div style='background: #F8FAFC; padding: 20px; border-radius: 10px;'>
     """, unsafe_allow_html=True)
-    with open("/home/ssohe/lang-observatory/dashboard/어휘사용관찰시스템_종합정리.md", "r") as f:
+    with open("/home/ssohe/lang-observatory/README.md", "r") as f:
         st.markdown(f.read())
     st.markdown("</div>", unsafe_allow_html=True)
 
