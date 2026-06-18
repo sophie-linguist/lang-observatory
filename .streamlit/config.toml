@@ -1,0 +1,12 @@
+[server]
+# Cloudflare Tunnel 등 리버스 프록시 뒤에서 실행하므로
+# CORS/XSRF 검증과 websocket 압축을 끈다. 켜져 있으면 프록시를 거치며
+# 핸드셰이크가 간헐적으로 어긋나 "Connecting..." 멈춤 / "Bad message format" /
+# "Tried to use SessionInfo before it was initialized" 오류가 발생한다.
+enableCORS = false
+enableXsrfProtection = false
+enableWebsocketCompression = false
+headless = true
+
+[browser]
+gatherUsageStats = false
