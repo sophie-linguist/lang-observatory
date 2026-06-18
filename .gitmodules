@@ -1,0 +1,3 @@
+[submodule "korean-spacing"]
+	path = korean-spacing
+	url = git@github.com:sophie-linguist/korean-spacing.git

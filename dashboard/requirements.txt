@@ -11,3 +11,6 @@ numpy==2.4.4
 scikit-learn==1.8.0
 umap-learn==0.5.12
 hdbscan==0.8.42
+
+# [부록] 한국어 띄어쓰기 페이지 (korean-spacing 서브모듈) 의존성
+ijson>=3.3.0
