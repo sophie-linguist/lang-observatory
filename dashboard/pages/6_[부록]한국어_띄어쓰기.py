@@ -118,6 +118,7 @@ html, body, [data-testid="stAppViewContainer"], .main .block-container {
 .rule-policy-space { font-size:12px; font-weight:800; color:#15803d; }
 .rule-policy-join  { font-size:12px; font-weight:800; color:#c2410c; }
 .rule-policy-both  { font-size:12px; font-weight:800; color:#b45309; }
+.rule-policy-confirm { font-size:12px; font-weight:800; color:#1d4ed8; }
 .rule-gist { color:#374151; font-size:14px; margin:6px 0 0; line-height:1.5; font-weight:600; }
 
 /* 사전 뜻풀이 */
@@ -359,7 +360,9 @@ with left:
             if result.rule_hints:
                 for rh in result.rule_hints:
                     policy_raw = rh.원칙허용
-                    if "+" in policy_raw or "허용" in policy_raw:
+                    if "확인" in policy_raw:
+                        pcls, plabel = "rule-policy-confirm", "✓ 이미 맞음"
+                    elif "+" in policy_raw or "허용" in policy_raw:
                         pcls, plabel = "rule-policy-both", "원칙 / 허용"
                     elif "원칙" in policy_raw:
                         pcls, plabel = "rule-policy-space", "원칙"
