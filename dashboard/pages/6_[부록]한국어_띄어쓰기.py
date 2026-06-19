@@ -120,6 +120,9 @@ html, body, [data-testid="stAppViewContainer"], .main .block-container {
 .rule-policy-both  { font-size:12px; font-weight:800; color:#b45309; }
 .rule-policy-confirm { font-size:12px; font-weight:800; color:#1d4ed8; }
 .rule-gist { color:#374151; font-size:14px; margin:6px 0 0; line-height:1.5; font-weight:600; }
+.rule-text { color:#1f2937; font-size:13.5px; margin:8px 0 0; line-height:1.55;
+    padding:8px 11px; background:#f9fafb; border-radius:8px; border:1px solid #eef0f4; }
+.rule-comment { color:#6b7280; font-size:12.5px; margin:6px 0 0; line-height:1.6; }
 
 /* 사전 뜻풀이 */
 .dict-entry { background:#fff; border:1px solid #e6e9f0; border-radius:12px;
@@ -219,6 +222,11 @@ def _load_rules() -> list[dict]:
     with open(RULES_PATH, encoding="utf-8") as f:
         data = json.load(f)
     return data.get("조항", [])
+
+@lru_cache(maxsize=1)
+def _rule_map() -> dict:
+    """항번호 → 조항 dict(조항 원문·예시·해설)."""
+    return {r["항번호"]: r for r in _load_rules()}
 
 def _search_urimalsaem(query: str, limit: int = 25) -> list[dict]:
     q = "".join(unicodedata.normalize("NFC", query.strip()).split())
@@ -368,11 +376,24 @@ with left:
                         pcls, plabel = "rule-policy-space", "원칙"
                     else:
                         pcls, plabel = "rule-policy-join", policy_raw
+                    # 조항 원문 + 해설 요약을 함께 보여 준다.
+                    clause = _rule_map().get(rh.항번호)
+                    clause_html = ""
+                    if clause:
+                        clause_text = clause.get("조항", "") or ""
+                        commentary = clause.get("해설") or clause.get("비고") or ""
+                        if len(commentary) > 180:
+                            commentary = commentary[:180].rstrip() + "…"
+                        if clause_text:
+                            clause_html += f"<div class='rule-text'>{html.escape(clause_text)}</div>"
+                        if commentary:
+                            clause_html += f"<div class='rule-comment'>{html.escape(commentary)}</div>"
                     st.markdown(f"""
 <div class='rule-card'>
   <span class='rule-clause'>{html.escape(rh.항번호)}</span>
   <span class='{pcls}' style='margin-left:8px;'>{html.escape(plabel)}</span>
   <p class='rule-gist'>{html.escape(rh.요지)}</p>
+  {clause_html}
 </div>""", unsafe_allow_html=True)
             else:
                 empty_note("적용되는 띄어쓰기 조항을 찾지 못했습니다.")
@@ -411,6 +432,19 @@ with left:
   <div style='font-size:13px;color:#92400e;margin-top:4px;'>{html.escape(cand.hint)}</div>
 </div>""", unsafe_allow_html=True)
 
+            # ④ 어떤 순서로 찾았나요? — 탐색 경로(판정 후 표시)
+            path = getattr(result, "inspection_path", None)
+            if path:
+                with st.expander("🔎 어떤 순서로 찾았는지 보기"):
+                    steps = "".join(
+                        f"<li style='margin:3px 0;'>{html.escape(s)}</li>" for s in path
+                    )
+                    st.markdown(
+                        "<ol style='font-size:13px;color:#4b5563;line-height:1.6;"
+                        f"padding-left:20px;margin:4px 0;'>{steps}</ol>",
+                        unsafe_allow_html=True,
+                    )
+
 
 # ── gap 구분선 ────────────────────────────────────────────────────
 with gap:
@@ -435,7 +469,9 @@ with right:
 
         for num, summary in RULE_SUMMARY.items():
             rule = rule_map.get(num)
-            with st.expander(f"**{num}** — {summary}"):
+            # 헤더에 요약 대신 조항 원문을 보여 준다(원문 없으면 요약으로 폴백).
+            header_text = (rule.get("조항", "") if rule else "") or summary
+            with st.expander(f"**{num}**　{header_text}"):
                 if rule:
                     st.markdown(f"> {rule.get('조항', '')}")
                     exs = rule.get("예시") or []
